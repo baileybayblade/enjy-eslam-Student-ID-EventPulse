@@ -35,11 +35,14 @@ exports.getEvents = async (req, res, next) => {
     // ...sorting logic
     let sortOption = {};
     if (sort === 'date') {
-      sortOption = { date: 1 }; // upcoming dates first
+      sortOption = { date: 1 };
     } else if (sort === '-date') {
       sortOption = { date: -1 };
+    } else if (sort === 'popularity') {
+      // sorts by registered attendees count descending
+      sortOption = { registeredCount: -1 }; 
     } else {
-      sortOption = { createdAt: -1 }; // def: newest first
+      sortOption = { createdAt: -1 };
     }
 
     // ...pagination setup
