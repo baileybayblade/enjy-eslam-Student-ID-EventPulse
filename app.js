@@ -4,6 +4,8 @@ const { Server } = require('socket.io');
 const Message = require('./models/Message');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const AppError = require('./utils/appError');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
 
 const app = express();
 app.use(express.json());
@@ -29,6 +31,14 @@ io.on('connection', (socket) => {
 
 app.set('io', io);
 
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'UP',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
 // routes
 app.use('/api/events', require('./routes/eventRoutes'));
 // app.use('/api/messages', require('./routes/messageRoutes'));
@@ -40,5 +50,6 @@ app.all('*', (req, res, next) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(errorHandler);
 module.exports = app;
