@@ -79,35 +79,31 @@ exports.getMyRegistrations = async (req, res, next) => {
   }
 };
 
-// @desc    cancel registration and free up a spot
+// @desc    Cancel an event registration
 // @route   DELETE /api/registrations/:id
-exports.cancelRegistration = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const registration = await Registration.findById(req.params.id);
+// @access  Private (Attendee)
+const cancelRegistration = asyncHandler(async (req, res, next) => {
+  const registration = await Registration.findById(req.params.id);
 
-    if (!registration) {
-      return res.status(404).json({
-        success: false,
-        message: 'Registration record not found.',
-      });
-    }
-
-    // ensure user can only cancel their own registration
-    if (registration.user.toString() !== userId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Unauthorized: You can only cancel your own registrations.',
-      });
-    }
-
-    await registration.deleteOne();
-
-    res.status(200).json({
-      success: true,
-      message: 'Registration cancelled. Space freed for another attendee.',
-    });
-  } catch (error) {
-    next(error);
+  if (!registration) {
+    return next(new AppError('Registration record not found', 404));
   }
-};
+
+  // Ensure user owns this registration
+  if (registration.user.toString() !== req.user.id) {
+    return next(new AppError('Not authorized to cancel this registration', 403));
+  }
+
+  // Remove registration record
+  await registration.deleteOne();
+
+  // Decrement event's registeredCount
+  await Event.findByIdAndUpdate(registration.event, {
+    $inc: { registeredCount: -1 },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: 'Registration cancelled successfully',
+  });
+});
