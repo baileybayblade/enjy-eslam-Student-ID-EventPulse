@@ -2,7 +2,7 @@ const Message = require('../models/Message');
 
 // @desc    Broadcast an announcement to a specific event room and save to DB (Admin Only)
 // @route   POST /api/messages/announcement
-exports.sendAnnouncement = async (req, res, next) => {
+exports.sendAnnouncement = async (req, res, next) => { 
   try {
     const { eventId, text } = req.body;
     const senderId = req.user._id; // Admin user ID from requireAuth
