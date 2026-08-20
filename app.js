@@ -43,8 +43,8 @@ app.get('/health', (req, res) => {
 app.use('/api/events', require('./routes/eventRoutes'));
 // app.use('/api/messages', require('./routes/messageRoutes'));
 
-app.all('*', (req, res, next) => {
-  next(new AppError(`Cannot find ${req.originalUrl} on this server`, 404));
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
 const PORT = process.env.PORT || 5000;
