@@ -1,0 +1,26 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "EventPulse API",
+    "version": "1.0.0",
+    "description": "API documentation for EventPulse backend platform thing"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "responses": {
+          "200": {
+            "description": "Server is up and running"
+          }
+        }
+      }
+    }
+  }
+}
