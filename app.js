@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -6,9 +8,14 @@ const { errorHandler } = require('./middleware/errorMiddleware');
 const AppError = require('./utils/appError');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
+const authRoutes = require('./routes/authRoutes');
+const connectDB = require('./config/db');
+
+connectDB();
 
 const app = express();
 app.use(express.json());
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*' }
@@ -31,6 +38,7 @@ io.on('connection', (socket) => {
 
 app.set('io', io);
 
+// health check route
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'UP',
@@ -39,17 +47,21 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // routes
+app.use('/api/auth', authRoutes);
 app.use('/api/events', require('./routes/eventRoutes'));
 // app.use('/api/messages', require('./routes/messageRoutes'));
 
+// 404 handler
 app.use((req, res, next) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use(errorHandler);
 module.exports = app;
