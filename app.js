@@ -2,10 +2,10 @@ require('dotenv').config();
 
 const express = require('express');
 const http = require('http');
+const morgan = require('morgan');
+const mongoSanitize = require('express-mongo-sanitize');
 const { Server } = require('socket.io');
-const Message = require('./models/Message');
 const { errorHandler } = require('./middleware/errorMiddleware');
-const AppError = require('./utils/appError');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger.json');
 const authRoutes = require('./routes/authRoutes');
@@ -14,7 +14,10 @@ const connectDB = require('./config/db');
 connectDB();
 
 const app = express();
+
 app.use(express.json());
+app.use(morgan('dev'));
+app.use(mongoSanitize());
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -61,7 +64,7 @@ app.use((req, res, next) => {
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 module.exports = app;
