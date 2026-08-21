@@ -9,6 +9,7 @@ const eventValidationRules = [
   body('title').notEmpty().withMessage('Title is required'),
   body('description').notEmpty().withMessage('Description is required'),
   body('city').notEmpty().withMessage('City is required'),
+  body('venue').notEmpty().withMessage('Venue is required'), // Added venue validation
   body('capacity')
     .isInt({ min: 1 })
     .withMessage('Capacity must be a positive number'),
