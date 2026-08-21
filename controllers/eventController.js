@@ -98,3 +98,13 @@ exports.updateEvent = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.createEvent = async (req, res, next) => {
+  try {
+    req.body.organizer = req.user.id; // organizer thing
+    const event = await Event.create(req.body);
+    res.status(201).json({ success: true, data: event });
+  } catch (error) {
+    next(error);
+  }
+};
