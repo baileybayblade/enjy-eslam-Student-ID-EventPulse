@@ -11,24 +11,22 @@ const swaggerDocument = require('./swagger.json');
 const authRoutes = require('./routes/authRoutes');
 const connectDB = require('./config/db');
 
-connectDB();
-
 const app = express();
 
-app.use(express.json());
+// middleware 4 express
 app.use(morgan('dev'));
+app.use(express.json());
 app.use(mongoSanitize());
 
+// http & socket.io server setup
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*' }
 });
 
-// socket.io connection stuff
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id}`);
 
-  // users join a specific event room
   socket.on('joinEventRoom', (eventId) => {
     socket.join(`event_${eventId}`);
     console.log(`Socket ${socket.id} joined room event_${eventId}`);
@@ -50,21 +48,36 @@ app.get('/health', (req, res) => {
   });
 });
 
+// swagger doc
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// routes
+// api routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', require('./routes/eventRoutes'));
 // app.use('/api/messages', require('./routes/messageRoutes'));
 
 // 404 handler
 app.use((req, res, next) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({ status: 'fail', message: 'Route not found' });
 });
 
+// global error handler
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// async start function thing
+async function start() {
+  try {
+    await connectDB();
+    const PORT = process.env.PORT || 3000;
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+start();
 
 module.exports = app;
